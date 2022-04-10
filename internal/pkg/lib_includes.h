@@ -6,7 +6,7 @@
 #define NON_EUCLIDEAN_ENGINE_LIB_INCLUDES_H
 
 #define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include "core/consts.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 

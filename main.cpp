@@ -8,9 +8,9 @@
 #include "internal/pkg/shader/shader.h"
 #include "internal/pkg/filesystem/filesystem.h"
 #include "internal/pkg/entity/sphere.h"
-#include "internal/pkg/entity/prism.h"
 #include "internal/pkg/entity/tree.h"
 #include "internal/pkg/entity/cube.h"
+#include "internal/pkg/input/input.h"
 
 #include <iostream>
 
@@ -26,6 +26,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 Camera camera;
+Input input;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -74,43 +75,9 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
 
-
     Shader ourShader(FileSystem::getPath("internal/pkg/shader/noneuclid.vs").c_str(), FileSystem::getPath("internal/pkg/shader/shader.fs").c_str());
-
-
-    std::vector<glm::vec3> cubePositions;
-    std::vector<Cube*> cubes;
-
-    const int cubeCount = 20;
-
-    float z = -2.0f;
-    float radius = 20.0f;
-    float x = 0.0f;
-    float stackAngle;
-    float stackStep = M_PI * 2 / cubeCount;
-    for(int i = 0; i < cubeCount; i++){
-        stackAngle = M_PI - i * stackStep;
-        x = radius * cosf(stackAngle);
-        z = radius * sinf(stackAngle);
-        float const y = 0.0f;
-        Cube *cube = new Cube();
-        glm::vec3 color = getRandomColor();
-        float sizeX = 1.0f;
-        float sizeY = 1.0f;
-        float sizeZ = 1.0f;
-        cube->init(sizeX,sizeY,sizeZ,color);
-        cube->translate(glm::vec3(x,y,z));
-        cubes.emplace_back(cube);
-    }
-
     ourShader.use();
 
-//    Tree *tree = new Tree();
-//    tree->init(glm::identity<glm::mat4x4>(),4);
-//    models.emplace_back(tree);
-    float anti = 1.0f;
-    float near = 0.1f;
-    float far = 100.0f;
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -128,7 +95,7 @@ int main()
             glfwSetCursorPos(window, 0, 0);
         }
 
-        camera.ProcessMouse(xpos,ypos,deltaTime);
+        camera.ProcessStep(input,xpos,ypos,deltaTime);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -147,6 +114,7 @@ int main()
         for (Entity* model : models) {
 			model->draw(ourShader);
 		}
+        input.ClearInput();
         glfwSwapInterval(1);
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -162,21 +130,21 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.leftPress = true;
+        input.SetKey(LEFT_MOVE, true);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.rightPress = true;
+        input.SetKey(RIGHT_MOVE, true);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.upPress = true;
+        input.SetKey(UP_MOVE, true);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.downPress = true;
+        input.SetKey(DOWN_MOVE, true);
     if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
-        camera.forwardPress = true;
+        input.SetKey(FORWARD_MOVE, true);
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
-        camera.backwardPress = true;
+        input.SetKey(BACKWARD_MOVE, true);
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        camera.counterClockWise = true;
+        input.SetKey(COUNTER_CLOCKWIZE_MOVE, true);
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        camera.clockWise = true;
+        input.SetKey(CLOCKWIZE_MOVE, true);
 
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
         LorentzSign = 0.0f;

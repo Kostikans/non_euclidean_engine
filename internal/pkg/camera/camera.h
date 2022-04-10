@@ -7,6 +7,7 @@
 #include "../core/geometry.h"
 #include <glm/gtx/string_cast.hpp>
 #include  <glm/gtx/io.hpp>
+#include "../input/input.h"
 
 #include <vector>
 
@@ -42,27 +43,43 @@ public:
             zoom = 45.0f;
     }
 
-    void ProcessKeyboard( float dt)
+    void ProcessStep(Input &input,double xoffset, double yoffset,float dt){
+        processMouse(input,xoffset,yoffset,dt);
+        processKeyboard(input,dt);
+        setPositionFromVelocity(dt);
+        renormalize();
+    }
+
+    Matrix4d GetPos() {
+        return pos;
+    }
+
+    Matrix4d GetViewMatrix() {
+        return VectorMath::hyperbolicTranspose(pos);
+    }
+
+private:
+    void processKeyboard( Input &input, float dt)
     {
         Vector4d goalVel(0, 0, 0, 0);
         double speed = 1.0;
-        if (forwardPress) {
+        if (input.IsKeyPressed(FORWARD_MOVE)) {
             goalVel(2) -= speed;
         }
-        if (backwardPress) {
+        if (input.IsKeyPressed(BACKWARD_MOVE)) {
             goalVel(2) += speed;
         }
-        if (leftPress) {
+        if (input.IsKeyPressed(LEFT_MOVE)) {
             goalVel(0) -= speed;
         }
-        if (rightPress) {
+        if (input.IsKeyPressed(RIGHT_MOVE)) {
             goalVel(0) += speed;
         }
 
-        if (downPress) {
+        if (input.IsKeyPressed(DOWN_MOVE)) {
             goalVel(1) -= 1;
         }
-        if (upPress) {
+        if (input.IsKeyPressed(UP_MOVE)) {
             goalVel(1) += 1;
         }
 
@@ -84,42 +101,26 @@ public:
         forwardPress = backwardPress = leftPress = rightPress = clockWise = counterClockWise = upPress = downPress = false;
     }
 
-    void ProcessMouse(double xoffset, double yoffset,double dt) {
+    void processMouse(Input &input,double xoffset, double yoffset,double dt) {
         glm::vec2 mouseLook(xoffset,yoffset);
         Matrix4d rotation = Matrix4d::Identity();
         rotation *= VectorMath::rotation(Vector3d(1, 0, 0), -mouseLook.y * 0.002 * zoom);
         rotation *= VectorMath::rotation(Vector3d(0, 1, 0), -mouseLook.x * 0.002 * zoom);
 
         double zRotation = 0;
-        if (clockWise) {
+        if (input.IsKeyPressed(CLOCKWIZE_MOVE)) {
             zRotation -= 1;
         }
-        if (counterClockWise) {
+        if (input.IsKeyPressed(COUNTER_CLOCKWIZE_MOVE)) {
             zRotation += 1;
         }
         rotation *= VectorMath::rotation(Vector3d(0, 0, 1), zRotation * dt);
 
         pos *= rotation;
         velocity = VectorMath::hyperbolicTranspose(rotation) * velocity;
-
-        updateCamera(dt);
     }
 
-    void updateCamera(float dt) {
-        ProcessKeyboard(dt);
-        setPositionFromVelocity(dt);
-        renormalize();
-    }
 
-    Matrix4d GetPos() {
-        return pos;
-    }
-
-    Matrix4d GetViewMatrix() {
-        return VectorMath::hyperbolicTranspose(pos);
-    }
-
-private:
     void setPositionFromVelocity(float dt ) {
         pos *= VectorMath::hyperbolicDisplacement(velocity * dt);
     }

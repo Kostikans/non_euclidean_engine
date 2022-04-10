@@ -5,6 +5,20 @@
 #ifndef NON_EUCLIDEAN_ENGINE_CONSTS_H
 #define NON_EUCLIDEAN_ENGINE_CONSTS_H
 
+#include <GLFW/glfw3.h>
+
+#define CLOCKWIZE_MOVE GLFW_KEY_E
+#define COUNTER_CLOCKWIZE_MOVE GLFW_KEY_Q
+#define FORWARD_MOVE GLFW_MOUSE_BUTTON_LEFT
+#define BACKWARD_MOVE GLFW_MOUSE_BUTTON_RIGHT
+#define UP_MOVE GLFW_KEY_W
+#define DOWN_MOVE GLFW_KEY_S
+#define LEFT_MOVE GLFW_KEY_A
+#define RIGHT_MOVE GLFW_KEY_D
+
+#define SPAWN_TREE GLFW_KEY_Z
+
+
 inline float LorentzSign = -1.0f;
 inline float globalScale = 1.0f;
 
