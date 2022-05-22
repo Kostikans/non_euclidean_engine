@@ -5,6 +5,7 @@
 #include "vertexBuffer.h"
 
 #include <iostream>
+
 VertexBuffer::VertexBuffer()
 {
 }
@@ -20,7 +21,6 @@ void VertexBuffer::allocate(const void* m_data, GLsizei size)
     glGenBuffers(1, &ID);
     glBindBuffer(GL_ARRAY_BUFFER, ID);
     glBufferData(GL_ARRAY_BUFFER, size, m_data, GL_STATIC_DRAW);
-
 }
 
 void VertexBuffer::bind() const

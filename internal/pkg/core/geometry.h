@@ -189,8 +189,12 @@ public:
 
     static Matrix4d sphericalSvdUnitary(const Matrix4d& matrix);
 
-    static double dotProduct(const glm::vec4& v0, const glm::vec4& v1) {
+    static double dotProductGlm(const glm::vec4& v0, const glm::vec4& v1) {
         return v0.x*v1.x + v0.y*v1.y + v0.z*v1.z - v0.w*v1.w;
+    }
+
+    static double dotProduct(const Vector4d & v0, const Vector4d& v1) {
+        return v0.x()*v1.x() + v0.y()*v1.y() + v0.z()*v1.z() - v0.w()*v1.w();
     }
 
     // Moves the origin to the specified position

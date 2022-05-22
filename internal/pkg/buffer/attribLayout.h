@@ -24,6 +24,7 @@ struct VertexBufferElement
         return 0;
     }
 };
+
 class AttribLayout
 {
 private:

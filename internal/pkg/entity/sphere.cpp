@@ -10,19 +10,19 @@
 #include  <glm/gtx/io.hpp>
 
 
-void Sphere::draw(Shader &shader) {
-    shader.use();
+void Sphere::draw(Shader *shader) {
+    shader->use();
     vao.bind();
 
     AttribLayout layout;
-    layout.push<float>(3);
+    layout.push<float>(4);
     layout.push<float>(2);
-    layout.push<float>(3);
+    layout.push<float>(4);
     vao.pushLayout(layout, vbo);
 
-    shader.setVec3("color",m_color);
-    shader.setMat4("R", getRotateMatrix());
-    shader.setMat4Eugen("T", getTranslateMatrix().cast<float>());
+    shader->setVec3("color", m_color);
+    shader->setMat4("R", getRotateMatrix());
+    shader->setMat4Eugen("T", getTranslateMatrix().cast<float>());
 
     ibo.bind();
     glDrawElements(GL_TRIANGLES, ibo.size(), GL_UNSIGNED_INT, 0);
@@ -41,7 +41,7 @@ void Sphere::rotate(const glm::quat &rotate) {
     m_rotate *= rotate;
 }
 
-void Sphere::init(float radius, float crutch, float depth,glm::vec3 color) {
+void Sphere::init(float radius, float crutch, float depth, glm::vec3 color) {
     m_radius = radius;
     std::vector<VertexData> vertexes;
     float sectorCount = 10;
@@ -72,7 +72,7 @@ void Sphere::init(float radius, float crutch, float depth,glm::vec3 color) {
             s = (float) j / sectorCount;
             t = (float) i / stackCount;
 
-            vertexes.push_back(VertexData(glm::vec3(x, y, z), glm::vec2(s, t), glm::vec3(nx, ny, nz)));
+            vertexes.emplace_back(VertexData(Vector4d(x, y, z, 1.0f), Vector2d(s, t), Vector4d(nx, ny, nz, 1.0f)));
         }
     }
     std::vector<GLuint> indices;
@@ -109,7 +109,7 @@ glm::vec3 Sphere::getPosition() const {
 }
 
 Matrix4d Sphere::getTranslateMatrix() const {
-    Matrix4d translate = VectorMath::hyperbolicTranslation(Vector4d(m_position.x,m_position.y,m_position.z,1.0f));
+    Matrix4d translate = VectorMath::hyperbolicTranslation(Vector4d(m_position.x, m_position.y, m_position.z, 1.0f));
 
     return translate;
 };

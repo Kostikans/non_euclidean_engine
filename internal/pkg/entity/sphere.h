@@ -17,7 +17,7 @@ private:
     glm::vec3 m_color;
 public:
     void init(float radius, float crutch = 0, float depth = 0,glm::vec3 color = glm::vec3(0.0f,0.0f,0.0f));
-    void draw(Shader& shader) override;
+    void draw(Shader *shader) override;
     void translate(const glm::vec3& translate) override;
     void scale(const float& scale) override;
     void rotate(const glm::quat& rotate) override;

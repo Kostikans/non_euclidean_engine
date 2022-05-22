@@ -4,7 +4,9 @@
 #include "../buffer/vertexBuffer.h"
 #include "../buffer/indexBuffer.h"
 #include "../buffer/vertexAttribBuffer.h"
+#include "../texture/texture.h"
 #include "../shader/shader.h"
+#include "builder.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,47 +14,62 @@
 
 #include "../core/geometry.h"
 
-struct VertexData
-{
-    VertexData() = default;;
-    VertexData(glm::vec3 m_pos, glm::vec2 m_texCoord, glm::vec3 m_norm)
-    {
-        position = glm::vec4(m_pos,1.0f);
-        texCoord = m_texCoord;
-        normal = m_norm;
-    }
-    VertexData(glm::vec4 m_pos, glm::vec2 m_texCoord, glm::vec3 m_norm)
-    {
-        position = m_pos;
-        texCoord = m_texCoord;
-        normal = m_norm;
-    }
-    explicit VertexData(glm::vec4 m_pos)
-    {
-        position = m_pos;
-    }
-    glm::vec4 position{};
-    glm::vec2 texCoord{};
-    glm::vec3 normal{};
-};
-
-
 class Entity {
 public:
-    virtual void draw(Shader &shader) = 0;
+    virtual void draw(Shader *shader) {
+        vao.bind();
 
-    virtual void translate(const glm::vec3 &translate) = 0;
+        AttribLayout layout;
+        layout.push<float>(4);
+        layout.push<float>(2);
+        layout.push<float>(4);
+        vao.pushLayout(layout, vbo);
 
-    virtual void scale(const float &scale) = 0;
+        if (texture != nullptr) {
+            texture->bind();
+            shader->setInt("texture_sampler", 0);
+        }
 
-    virtual void rotate(const glm::quat &rotate) = 0;
+        shader->setMat4("R", getRotateMatrix());
+        shader->setMat4Eugen("T",  Matrix4d::Identity().cast<float>());
 
-    [[nodiscard]] virtual Matrix4d getTranslateMatrix() const = 0;
+        ibo.bind();
+        glDrawElements(GL_TRIANGLES, ibo.size(), GL_UNSIGNED_INT, 0);
+        ibo.unbind();
+    };
 
-    [[nodiscard]] virtual glm::mat4x4 getRotateMatrix() const = 0;
+    virtual void translate(const glm::vec3 &translate) {
+        m_position += translate;
+    };
+
+    virtual void scale(const float &scale) {
+        m_scale *= scale;
+    };
+
+    virtual void rotate(const glm::quat &rotate) {
+        m_rotate *= rotate;
+    };
+
+    [[nodiscard]] virtual Matrix4d getTranslateMatrix() const {
+        Matrix4d translate = VectorMath::hyperbolicTranslation(
+                Vector4d(m_position.x, m_position.y, m_position.z, 1.0f));
+
+        return translate;
+    };
+
+    [[nodiscard]] virtual glm::mat4x4 getRotateMatrix() const {
+        glm::quat rotate = glm::normalize(m_rotate);
+
+        return glm::toMat4(rotate);
+    };
 
 protected:
-    glm::vec3 m_position = glm::vec3(0,0,0);
+    VertexBuffer vbo;
+    IndexBuffer ibo;
+    VertexAttribBuffer vao;
+    Texture *texture;
+
+    glm::vec3 m_position = glm::vec3(0, 0, 0);
     Matrix4d model = Matrix4d::Identity();
 
     glm::quat m_rotate;
